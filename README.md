@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🤖 Rutinas del Robot - Juego Educativo
 
-## Getting Started
+Un juego interactivo diseñado para niños de jardín que combina secuencias robóticas con tecnología de escaneo QR.
 
-First, run the development server:
+## 🎯 Características
+
+- **3 niveles de dificultad** adaptados por edad:
+  - **Sala de 3**: 2-3 pasos simples
+  - **Sala de 4**: 3-4 pasos intermedios  
+  - **Sala de 5**: 4-6 pasos con distractores
+
+- **Interfaz atractiva** con colores vibrantes y animaciones
+- **Sistema de puntuación** con estrellas y feedback visual
+- **Efectos de sonido** opcionales para mayor inmersión
+- **Escaneo QR** para interactuar con tarjetas físicas
+
+## 🚀 Cómo usar
+
+1. **Seleccionar sala**: Elige la edad/nivel apropiado
+2. **Observar rutina**: El robot muestra la secuencia de acciones
+3. **Ordenar tarjetas**: Coloca las tarjetas físicas en el orden correcto
+4. **Escanear**: Usa la cámara para escanear las tarjetas en orden
+5. **¡Celebrar!**: Recibe puntos y feedback positivo
+
+## 🛠️ Instalación
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Abrir en el navegador
+http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📱 Requisitos
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- Navegador web moderno con soporte para cámara
+- Permisos de cámara para el escaneo QR
+- Tarjetas físicas con códigos QR (opcional para testing)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎨 Tecnologías
 
-## Learn More
+- **Next.js 15** - Framework React
+- **Tailwind CSS** - Estilos y diseño responsivo
+- **ZXing** - Biblioteca de escaneo QR
+- **Web Audio API** - Efectos de sonido
 
-To learn more about Next.js, take a look at the following resources:
+## 🎮 Cómo jugar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Inicio**: Selecciona tu sala de edad
+2. **Aprendizaje**: Observa la rutina del robot
+3. **Práctica**: Ordena las tarjetas físicas
+4. **Evaluación**: Escanea las tarjetas en orden
+5. **Refuerzo**: Recibe feedback y puntuación
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎵 Audio
 
-## Deploy on Vercel
+El juego incluye efectos de sonido que se pueden activar/desactivar:
+- 🔊 Sonido de escaneo exitoso
+- 🎉 Melodía de celebración
+- ❌ Sonido de error
+- 🔇 Opción de silenciar
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Objetivos Educativos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Desarrollo de memoria secuencial
+- Mejora de atención y concentración
+- Coordinación ojo-mano
+- Resolución de problemas
+- Reconocimiento de patrones
+
+¡Disfruta aprendiendo con el robot! 🤖✨
