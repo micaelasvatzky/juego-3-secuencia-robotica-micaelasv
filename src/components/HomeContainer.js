@@ -10,18 +10,21 @@ const HomeContainer = () => {
   const juegos = [
     {
       id: "juego1",
+      nombre: "Juego 1",
       emoji: "🎨",
       color: "#FFD700", // Amarillo
       ruta: "/juego1"
     },
     {
       id: "juego2", 
-      emoji: "🧩",
+      nombre: "El Juego del Chef Robot",
+      emoji: "🤖",
       color: "#FF0000", // Rojo
       ruta: "/juego2"
     },
     {
       id: "juego3",
+      nombre: "Rutinas del Robot",
       emoji: "🤖",
       color: "#0000FF", // Azul
       ruta: "/rutinas"
@@ -48,15 +51,18 @@ const HomeContainer = () => {
              <button
                key={juego.id}
                onClick={() => handleGameSelect(juego)}
-               className="transition-all duration-200 transform hover:scale-110 focus:outline-none"
+               className="transition-all duration-200 transform hover:scale-110 focus:outline-none flex flex-col items-center"
              >
                <div 
-                 className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center"
+                 className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center mb-4"
                  style={{ backgroundColor: juego.color }}
                >
                  <div className="text-6xl">
                    {juego.emoji}
                  </div>
+               </div>
+               <div className="text-lg font-bold text-gray-800 text-center">
+                 {juego.nombre}
                </div>
              </button>
            ))}

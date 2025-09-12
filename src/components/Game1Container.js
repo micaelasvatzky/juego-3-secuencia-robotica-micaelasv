@@ -146,82 +146,128 @@ const Game1Container = () => {
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
         {/* Selección de modo */}
         {gameState === "SELECT_MODE" && (
-          <div className="flex gap-8">
-              <button
-                onClick={() => handleModeSelect('colors')}
-                className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center transition-all duration-200 transform hover:scale-110"
-                style={{ backgroundColor: '#FF0000' }}
-              >
-                <div className="text-6xl">🎨</div>
-              </button>
-              
-              <button
-                onClick={() => handleModeSelect('shapes')}
-                className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center transition-all duration-200 transform hover:scale-110"
-                style={{ backgroundColor: '#00FF00' }}
-              >
-                <div className="text-6xl">🧩</div>
-              </button>
+          <div className="text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                🎨 Juego de Colores y Formas
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                ¡Aprende colores y formas de forma divertida!
+              </p>
+            </div>
             
+            <div className="flex gap-8 justify-center">
+              <div className="text-center">
+                <button
+                  onClick={() => handleModeSelect('colors')}
+                  className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center transition-all duration-200 transform hover:scale-110 mb-4"
+                  style={{ backgroundColor: '#FF0000' }}
+                >
+                  <div className="text-6xl">🎨</div>
+                </button>
+                <p className="text-white font-bold text-lg">Colores</p>
+                <p className="text-white/80 text-sm">Toca el color correcto</p>
+              </div>
+              
+              <div className="text-center">
+                <button
+                  onClick={() => handleModeSelect('shapes')}
+                  className="w-32 h-32 rounded-full shadow-lg border-4 border-white flex items-center justify-center transition-all duration-200 transform hover:scale-110 mb-4"
+                  style={{ backgroundColor: '#00FF00' }}
+                >
+                  <div className="text-6xl">🧩</div>
+                </button>
+                <p className="text-white font-bold text-lg">Formas</p>
+                <p className="text-white/80 text-sm">Encuentra la forma</p>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Juego de colores */}
         {gameState === "COLOR_GAME" && currentColor && (
-          <div className="flex flex-col items-center">
-            <div className="mb-8">
-              <div 
-                className="w-32 h-32 mx-auto rounded-full shadow-2xl border-8 border-white flex items-center justify-center"
-                style={{ backgroundColor: currentColor.color }}
-              >
-                <div className="text-6xl">
-                  {currentColor.emoji}
-                </div>
-              </div>
+          <div className="text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                🎨 Encuentra el Color
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Toca el color que aparece arriba
+              </p>
             </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              {colores.map((color) => (
-                <button
-                  key={color.id}
-                  onClick={() => handleColorSelect(color)}
-                  className={`w-20 h-20 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 border-4 ${
-                    color.id === currentColor.id ? 'border-yellow-400' : 'border-white'
-                  }`}
-                  style={{ backgroundColor: color.color }}
+            
+            <div className="flex flex-col items-center">
+              <div className="mb-8">
+                <div 
+                  className="w-32 h-32 mx-auto rounded-full shadow-2xl border-8 border-white flex items-center justify-center"
+                  style={{ backgroundColor: currentColor.color }}
                 >
-                  <div className="text-3xl">{color.emoji}</div>
-                </button>
-              ))}
+                  <div className="text-6xl">
+                    {currentColor.emoji}
+                  </div>
+                </div>
+                <p className="text-white font-bold text-xl mt-4">
+                  {currentColor.nombre}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {colores.map((color) => (
+                  <button
+                    key={color.id}
+                    onClick={() => handleColorSelect(color)}
+                    className={`w-20 h-20 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 border-4 ${
+                      color.id === currentColor.id ? 'border-yellow-400' : 'border-white'
+                    }`}
+                    style={{ backgroundColor: color.color }}
+                  >
+                    <div className="text-3xl">{color.emoji}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {/* Juego de formas */}
         {gameState === "SHAPE_GAME" && currentShape && (
-          <div className="flex flex-col items-center">
-            <div className="mb-8">
-              <div 
-                className="w-32 h-32 mx-auto rounded-2xl shadow-2xl border-8 border-white flex items-center justify-center"
-                style={{ backgroundColor: currentShape.color }}
-              >
-                <div className="text-6xl">{currentShape.emoji}</div>
-              </div>
+          <div className="text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                🧩 Encuentra la Forma
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Toca la forma que aparece arriba
+              </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              {formas.map((forma) => (
-                <button
-                  key={forma.id}
-                  onClick={() => handleShapeSelect(forma)}
-                  className={`w-24 h-24 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-110 border-4 ${
-                    forma.id === currentShape.id ? 'border-yellow-400' : 'border-white'
-                  }`}
-                  style={{ backgroundColor: forma.color }}
+            
+            <div className="flex flex-col items-center">
+              <div className="mb-8">
+                <div 
+                  className="w-32 h-32 mx-auto rounded-2xl shadow-2xl border-8 border-white flex items-center justify-center"
+                  style={{ backgroundColor: currentShape.color }}
                 >
-                  <div className="text-4xl">{forma.emoji}</div>
-                </button>
-              ))}
+                  <div className="text-6xl">{currentShape.emoji}</div>
+                </div>
+                <p className="text-white font-bold text-xl mt-4">
+                  {currentShape.nombre}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {formas.map((forma) => (
+                  <button
+                    key={forma.id}
+                    onClick={() => handleShapeSelect(forma)}
+                    className={`w-24 h-24 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-110 border-4 ${
+                      forma.id === currentShape.id ? 'border-yellow-400' : 'border-white'
+                    }`}
+                    style={{ backgroundColor: forma.color }}
+                  >
+                    <div className="text-4xl">{forma.emoji}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

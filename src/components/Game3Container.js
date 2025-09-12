@@ -81,27 +81,56 @@ const distractores = [
   }
 ];
 
-// Configuraciones por sala
-const configuracionesSala = {
-  sala3: {
-    nombre: "Sala de 3",
+// Configuraciones por nivel de dificultad
+const configuracionesNivel = {
+  facil: {
+    nombre: "Fácil",
     emoji: "🌟",
     color: "#FF6B9D", // Rosa vibrante
-    rutinas: [1, 2], // 2-3 pasos
+    descripcion: "2-3 pasos simples",
+    secuencias: [
+      [1, 2], // Saltar, Caminar
+      [2, 3], // Caminar, Correr
+      [3, 1], // Correr, Saltar
+      [1, 3], // Saltar, Correr
+      [2, 1]  // Caminar, Saltar
+    ],
     distractores: []
   },
-  sala4: {
-    nombre: "Sala de 4", 
+  intermedio: {
+    nombre: "Intermedio", 
     emoji: "🚀",
     color: "#4ECDC4", // Turquesa
-    rutinas: [1, 2, 3], // 3-4 pasos
+    descripcion: "3-4 pasos con más acción",
+    secuencias: [
+      [1, 2, 3], // Saltar, Caminar, Correr
+      [2, 3, 1], // Caminar, Correr, Saltar
+      [3, 1, 2], // Correr, Saltar, Caminar
+      [1, 3, 2], // Saltar, Correr, Caminar
+      [2, 1, 3], // Caminar, Saltar, Correr
+      [3, 2, 1], // Correr, Caminar, Saltar
+      [1, 2, 4], // Saltar, Caminar, Girar
+      [2, 4, 1]  // Caminar, Girar, Saltar
+    ],
     distractores: []
   },
-  sala5: {
-    nombre: "Sala de 5",
+  dificil: {
+    nombre: "Difícil",
     emoji: "🎯", 
     color: "#45B7D1", // Azul cielo
-    rutinas: [1, 2, 3, 4, 5], // 4-6 pasos
+    descripcion: "4-6 pasos con distractores",
+    secuencias: [
+      [1, 2, 3, 4], // Saltar, Caminar, Correr, Girar
+      [2, 3, 4, 1], // Caminar, Correr, Girar, Saltar
+      [3, 4, 1, 2], // Correr, Girar, Saltar, Caminar
+      [4, 1, 2, 3], // Girar, Saltar, Caminar, Correr
+      [1, 3, 2, 4], // Saltar, Correr, Caminar, Girar
+      [2, 4, 3, 1], // Caminar, Girar, Correr, Saltar
+      [1, 2, 3, 4, 5], // Secuencia de 5 pasos
+      [2, 3, 4, 5, 1], // Otra secuencia de 5 pasos
+      [1, 3, 5, 2, 4], // Secuencia mixta de 5 pasos
+      [3, 1, 4, 2, 5]  // Secuencia compleja de 5 pasos
+    ],
     distractores: [99, 98] // Con distractores
   }
 };
@@ -109,7 +138,7 @@ const configuracionesSala = {
 const Game3Container = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const sala = searchParams.get('sala') || 'sala3';
+  const nivel = searchParams.get('nivel') || 'facil';
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gameState, setGameState] = useState("SHOWING_ROUTINE"); // SHOWING_ROUTINE, WAITING_SCAN, SCANNING, VALIDATING, CELEBRATION, RETRY
@@ -120,25 +149,31 @@ const Game3Container = () => {
   const [attempts, setAttempts] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [testMode, setTestMode] = useState(false);
+  const [simulateMode, setSimulateMode] = useState(false);
+  const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0);
+  const [completedSequences, setCompletedSequences] = useState(0);
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const audioContextRef = useRef(null);
 
-  // Obtener configuración de la sala actual
-  const configSala = configuracionesSala[sala];
+  // Obtener configuración del nivel actual
+  const configNivel = configuracionesNivel[nivel];
   
-  // Generar rutinas para esta sala
-  const rutinas = configSala.rutinas.map(id => 
+  // Obtener la secuencia actual
+  const secuenciaActual = configNivel.secuencias[currentSequenceIndex];
+  
+  // Generar rutinas para esta secuencia
+  const rutinas = secuenciaActual.map(id => 
     todasLasRutinas.find(r => r.id === id)
   ).filter(Boolean);
   
-  // Agregar distractores si es sala de 5
+  // Agregar distractores si es nivel difícil
   const todasLasOpciones = [...rutinas];
-  if (configSala.distractores.length > 0) {
-    const distractoresSala = configSala.distractores.map(id => 
+  if (configNivel.distractores.length > 0) {
+    const distractoresNivel = configNivel.distractores.map(id => 
       distractores.find(d => d.id === id)
     ).filter(Boolean);
-    todasLasOpciones.push(...distractoresSala);
+    todasLasOpciones.push(...distractoresNivel);
   }
 
   useEffect(() => {
@@ -167,7 +202,6 @@ const Game3Container = () => {
     try {
       setGameState("SCANNING");
       setIsScanning(true);
-      setScannedSequence([]);
       
       // Inicializar el lector de códigos QR
       readerRef.current = new BrowserMultiFormatReader();
@@ -213,12 +247,15 @@ const Game3Container = () => {
     
     if (rutina) {
       playScanSound(); // Reproducir sonido de escaneo
-      setScannedSequence(prev => [...prev, rutina]);
+      
+      // Siempre agregar la rutina a la secuencia (sin importar si es correcta o no)
+      const newSequence = [...scannedSequence, rutina];
+      setScannedSequence(newSequence);
       
       // Si hemos escaneado todas las rutinas necesarias, validar la secuencia
-      if (scannedSequence.length + 1 === rutinas.length) {
+      if (newSequence.length === rutinas.length) {
         stopScanning();
-        validateSequence([...scannedSequence, rutina]);
+        validateSequence(newSequence);
       }
     } else {
       console.log('Código QR no reconocido:', qrCodeText);
@@ -227,20 +264,58 @@ const Game3Container = () => {
 
   const handleTestModeClick = (rutina) => {
     playScanSound(); // Reproducir sonido de escaneo
-    setScannedSequence(prev => [...prev, rutina]);
+    
+    // Siempre agregar la rutina a la secuencia (sin importar si es correcta o no)
+    const newSequence = [...scannedSequence, rutina];
+    setScannedSequence(newSequence);
     
     // Si hemos escaneado todas las rutinas necesarias, validar la secuencia
-    if (scannedSequence.length + 1 === rutinas.length) {
-      validateSequence([...scannedSequence, rutina]);
+    if (newSequence.length === rutinas.length) {
+      validateSequence(newSequence);
     }
   };
 
   const stopScanning = () => {
     if (readerRef.current) {
-      readerRef.current.reset();
+      try {
+        readerRef.current.reset();
+      } catch (error) {
+        console.log('Error al resetear el lector:', error);
+      }
     }
+    
+    // Detener el stream de video
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    
     setIsScanning(false);
     setGameState("WAITING_SCAN");
+    // No resetear la secuencia escaneada para que se mantenga el progreso
+  };
+
+  const cancelScanning = () => {
+    if (readerRef.current) {
+      try {
+        readerRef.current.reset();
+      } catch (error) {
+        console.log('Error al resetear el lector:', error);
+      }
+    }
+    
+    // Detener el stream de video
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    
+    setIsScanning(false);
+    setGameState("SHOWING_ROUTINE");
+    setCurrentImageIndex(0);
+    setIsSlideshowComplete(false);
     setScannedSequence([]);
   };
 
@@ -250,7 +325,7 @@ const Game3Container = () => {
     
     // Verificar si hay distractores en la secuencia
     const hasDistractors = sequence.some(rutina => 
-      configSala.distractores.includes(rutina.id)
+      configNivel.distractores.includes(rutina.id)
     );
     
     // Comparar la secuencia escaneada con la secuencia correcta
@@ -261,8 +336,9 @@ const Game3Container = () => {
     setTimeout(() => {
       if (isCorrect) {
         setScore(prev => prev + 100);
+        setCompletedSequences(prev => prev + 1);
         setGameState("CELEBRATION");
-        playSuccessSound(); // Reproducir sonido de éxito
+        playSuccessSound();
       } else {
         setGameState("RETRY");
         playErrorSound(); // Reproducir sonido de error
@@ -275,6 +351,8 @@ const Game3Container = () => {
     setIsSlideshowComplete(false);
     setGameState("SHOWING_ROUTINE");
     setScannedSequence([]);
+    setCurrentSequenceIndex(0);
+    setCompletedSequences(0);
     stopScanning();
   };
 
@@ -336,14 +414,25 @@ const Game3Container = () => {
   useEffect(() => {
     return () => {
       if (readerRef.current) {
-        readerRef.current.reset();
+        try {
+          readerRef.current.reset();
+        } catch (error) {
+          console.log('Error al resetear el lector en cleanup:', error);
+        }
+      }
+      
+      // Detener el stream de video
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        videoRef.current.srcObject = null;
       }
     };
   }, []);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0000FF' }}>
-      {/* Header simple */}
+      {/* Header con información del nivel */}
       <div className="flex items-center justify-between p-4">
         <button
           onClick={handleBackToHome}
@@ -351,6 +440,17 @@ const Game3Container = () => {
         >
           🏠
         </button>
+        
+        {/* Información del nivel */}
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white mb-1">
+            {configNivel.emoji} {configNivel.nombre}
+          </div>
+          <div className="text-sm text-white/80">
+            Secuencia {currentSequenceIndex + 1} de {configNivel.secuencias.length}
+          </div>
+        </div>
+        
         <div className="flex items-center gap-4">
           <button
             onClick={() => setTestMode(!testMode)}
@@ -360,6 +460,15 @@ const Game3Container = () => {
             title="Modo de prueba"
           >
             🧪
+          </button>
+          <button
+            onClick={() => setSimulateMode(!simulateMode)}
+            className={`text-3xl transition-transform duration-200 hover:scale-110 ${
+              simulateMode ? 'text-green-500' : 'text-gray-400'
+            }`}
+            title="Modo de simulación"
+          >
+            📝
           </button>
           <div className="text-4xl">⭐ {score}</div>
         </div>
@@ -536,7 +645,7 @@ const Game3Container = () => {
               </div>
 
               <button
-                onClick={stopScanning}
+                onClick={cancelScanning}
                 className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                 style={{ backgroundColor: '#FF6B6B' }}
               >
@@ -567,29 +676,48 @@ const Game3Container = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
               <div className="text-8xl mb-6 animate-bounce">🎉</div>
               <h2 className="text-4xl font-bold text-green-600 mb-4">
-                ¡Excelente trabajo!
+                ¡Felicitaciones!
               </h2>
               <p className="text-xl text-gray-700 mb-6">
-                ¡La secuencia es perfecta! 🌟
+                ¡La secuencia es correcta! ¡Muy bien hecho!
               </p>
               
               <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFF3CD' }}>
                 <div className="text-2xl font-bold mb-2" style={{ color: '#FF8C00' }}>
                   +100 puntos! ⭐
                 </div>
-                <div className="text-lg text-gray-700">
+                <div className="text-lg text-gray-700 mb-2">
                   Puntuación total: {score}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Secuencias completadas: {completedSequences}/{configNivel.secuencias.length}
                 </div>
               </div>
 
               <div className="flex gap-4 justify-center">
-                <button
-                  onClick={handleRestartRoutine}
-                  className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                  style={{ backgroundColor: '#45B7D1' }}
-                >
-                  🔄 Jugar de Nuevo
-                </button>
+                {currentSequenceIndex < configNivel.secuencias.length - 1 ? (
+                  <button
+                    onClick={() => {
+                      setCurrentSequenceIndex(prev => prev + 1);
+                      setCurrentImageIndex(0);
+                      setIsSlideshowComplete(false);
+                      setGameState("SHOWING_ROUTINE");
+                      setScannedSequence([]);
+                    }}
+                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    style={{ backgroundColor: '#45B7D1' }}
+                  >
+                    ➡️ Siguiente Secuencia
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleRestartRoutine}
+                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    style={{ backgroundColor: '#45B7D1' }}
+                  >
+                    🔄 Jugar de Nuevo
+                  </button>
+                )}
                 <button
                   onClick={handleBackToHome}
                   className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -608,10 +736,10 @@ const Game3Container = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
               <div className="text-6xl mb-6">😔</div>
               <h2 className="text-3xl font-bold text-red-600 mb-4">
-                ¡Ups! Inténtalo de nuevo
+                ¡La secuencia no es correcta!
               </h2>
               <p className="text-xl text-gray-700 mb-6">
-                La secuencia no es correcta, pero no te preocupes
+                No te preocupes, podés volver a intentar escaneando las cartas en el orden correcto
               </p>
               
               <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFF3CD' }}>

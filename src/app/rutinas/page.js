@@ -5,86 +5,105 @@ import { useRouter } from "next/navigation";
 import Game3Container from "@/components/Game3Container";
 
 export default function Page() {
-  const [selectedSala, setSelectedSala] = useState(null);
+  const [selectedNivel, setSelectedNivel] = useState(null);
   const router = useRouter();
 
-  const salas = [
+  const niveles = [
     {
-      id: "sala3",
-      nombre: "Sala de 3",
-      edad: "3 años",
-      pasos: "2-3 pasos",
-      color: "from-pink-400 to-pink-600",
+      id: "facil",
+      nombre: "Fácil",
+      descripcion: "2-3 pasos simples",
+      color: "#FF6B9D",
       emoji: "🌟",
-      descripcion: "Rutinas simples y divertidas"
+      secuencias: 5,
     },
     {
-      id: "sala4", 
-      nombre: "Sala de 4",
-      edad: "4 años",
-      pasos: "3-4 pasos",
-      color: "from-blue-400 to-blue-600",
+      id: "intermedio",
+      nombre: "Intermedio",
+      descripcion: "3-4 pasos con más acción",
+      color: "#4ECDC4",
       emoji: "🚀",
-      descripcion: "Rutinas un poco más desafiantes"
+      secuencias: 8,
     },
     {
-      id: "sala5",
-      nombre: "Sala de 5", 
-      edad: "5 años",
-      pasos: "4-6 pasos con distractores",
-      color: "from-green-400 to-green-600",
+      id: "dificil",
+      nombre: "Difícil",
+      descripcion: "4-6 pasos con distractores",
+      color: "#45B7D1",
       emoji: "🎯",
-      descripcion: "Rutinas complejas con desafíos"
-    }
+      secuencias: 10,
+    },
   ];
 
   const handleStartGame = () => {
-    if (selectedSala) {
-      router.push(`/rutinas?sala=${selectedSala}`);
+    if (selectedNivel) {
+      router.push(`/rutinas?nivel=${selectedNivel}`);
     }
   };
 
-  // Si ya hay una sala seleccionada en la URL, mostrar el juego directamente
-  if (typeof window !== 'undefined') {
+  // Si ya hay un nivel seleccionado en la URL, mostrar el juego directamente
+  if (typeof window !== "undefined") {
     const urlParams = new URLSearchParams(window.location.search);
-    const salaFromUrl = urlParams.get('sala');
-    if (salaFromUrl) {
+    const nivelFromUrl = urlParams.get("nivel");
+    if (nivelFromUrl) {
       return <Game3Container />;
     }
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0000FF' }}>
-      {/* Selector de Sala */}
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="grid grid-cols-3 gap-8">
-          {salas.map((sala) => (
+    <div className="min-h-screen" style={{ backgroundColor: "#0000FF" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4">
+        <button
+          onClick={() => router.push("/")}
+          className="text-4xl hover:scale-110 transition-transform duration-200"
+        >
+          🏠
+        </button>
+        <h1 className="text-3xl font-bold text-white">🤖 Rutinas del Robot</h1>
+        <div></div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white mb-4">Elegí tu nivel</h2>
+          <p className="text-lg text-white/80">
+            Cada nivel tiene diferentes secuencias para jugar
+          </p>
+        </div>
+
+        {/* Grid de niveles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {niveles.map((nivel) => (
             <button
-              key={sala.id}
-              onClick={() => setSelectedSala(sala.id)}
-              className={`w-32 h-32 rounded-full shadow-lg border-4 border-white transition-all duration-200 transform hover:scale-110 ${
-                selectedSala === sala.id ? "scale-110" : ""
-              }`}
-              style={{ backgroundColor: sala.color }}
+              key={nivel.id}
+              onClick={() => setSelectedNivel(nivel.id)}
+              className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
             >
-              <div className="text-6xl">{sala.emoji}</div>
+              <div
+                className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
+                style={{ backgroundColor: nivel.color }}
+              >
+                <div className="text-5xl mb-3">{nivel.emoji}</div>
+                <div className="text-white font-bold text-xl mb-2">
+                  {nivel.nombre}
+                </div>
+              </div>
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Botón de inicio */}
-      {selectedSala && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2">
+        {/* Botón para comenzar */}
+        {selectedNivel && (
           <button
             onClick={handleStartGame}
-            className="w-24 h-24 rounded-full shadow-lg border-4 border-white transition-all duration-200 transform hover:scale-110"
-            style={{ backgroundColor: '#00FF00' }}
+            className="text-white py-4 px-12 text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            style={{ backgroundColor: "#4ECDC4" }}
           >
-            <div className="text-4xl">🚀</div>
+            🎮 ¡Comenzar Juego!
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
