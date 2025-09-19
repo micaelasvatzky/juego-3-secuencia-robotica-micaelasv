@@ -694,7 +694,8 @@ const Game3Container = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="grid grid-cols-2 gap-4 justify-center">
+                {/* Siguiente secuencia */}
                 {currentSequenceIndex < configNivel.secuencias.length - 1 ? (
                   <button
                     onClick={() => {
@@ -704,23 +705,42 @@ const Game3Container = () => {
                       setGameState("SHOWING_ROUTINE");
                       setScannedSequence([]);
                     }}
-                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    style={{ backgroundColor: '#45B7D1' }}
+                    className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    style={{ backgroundColor: '#10B981' }}
                   >
                     ➡️ Siguiente Secuencia
                   </button>
-                ) : (
-                  <button
-                    onClick={handleRestartRoutine}
-                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    style={{ backgroundColor: '#45B7D1' }}
-                  >
-                    🔄 Jugar de Nuevo
-                  </button>
-                )}
+                ) : null}
+                
+                {/* Jugar de nuevo */}
+                <button
+                  onClick={handleRestartRoutine}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#45B7D1' }}
+                >
+                  🔄 Jugar de Nuevo
+                </button>
+                
+                {/* Elegir nivel */}
+                <button
+                  onClick={() => {
+                    setCurrentSequenceIndex(0);
+                    setCurrentImageIndex(0);
+                    setIsSlideshowComplete(false);
+                    setScannedSequence([]);
+                    setCompletedSequences(0);
+                    setGameState("SHOWING_ROUTINE");
+                  }}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#8B5CF6' }}
+                >
+                  🎯 Reiniciar Rutina
+                </button>
+                
+                {/* Volver a home */}
                 <button
                   onClick={handleBackToHome}
-                  className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: '#FF6B9D' }}
                 >
                   🏠 Volver al Inicio
@@ -751,20 +771,46 @@ const Game3Container = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="grid grid-cols-2 gap-4 justify-center">
+                {/* Intentar de nuevo */}
                 <button
                   onClick={handleRetry}
-                  className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: '#FFD93D' }}
                 >
                   🔄 Intentar de Nuevo
                 </button>
+                
+                {/* Ver rutina */}
                 <button
-                  onClick={handleRestartRoutine}
-                  className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  onClick={() => {
+                    setCurrentImageIndex(0);
+                    setIsSlideshowComplete(false);
+                    setGameState("SHOWING_ROUTINE");
+                    setScannedSequence([]);
+                  }}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: '#45B7D1' }}
                 >
                   👀 Ver Rutina
+                </button>
+                
+                {/* Reiniciar rutina */}
+                <button
+                  onClick={handleRestartRoutine}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#8B5CF6' }}
+                >
+                  🎯 Reiniciar Rutina
+                </button>
+                
+                {/* Volver a home */}
+                <button
+                  onClick={handleBackToHome}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#FF6B9D' }}
+                >
+                  🏠 Volver al Inicio
                 </button>
               </div>
             </div>

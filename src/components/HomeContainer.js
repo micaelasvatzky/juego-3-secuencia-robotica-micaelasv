@@ -10,8 +10,8 @@ const HomeContainer = () => {
   const juegos = [
     {
       id: "juego1",
-      nombre: "Juego 1",
-      emoji: "🎨",
+      nombre: "Aventura en la Grilla",
+      emoji: "🤖",
       color: "#FFD700", // Amarillo
       ruta: "/juego1"
     },

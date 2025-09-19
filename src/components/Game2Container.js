@@ -112,10 +112,14 @@ const distractores = [
   }
 ];
 
-// Recetas por nivel de dificultad
-const recetasPorNivel = {
-  facil: {
-    nombre: "Fácil",
+// Generar 10 niveles para cada tipo de receta
+const generateRecipeLevels = () => {
+  const levels = {};
+  
+  // Nivel Fácil: 10 niveles
+  for (let i = 1; i <= 10; i++) {
+    levels[`facil_${i}`] = {
+      nombre: `Fácil-${i}`,
     emoji: "🌟",
     color: "#FF6B9D",
     descripcion: "2-3 ingredientes simples",
@@ -146,9 +150,13 @@ const recetasPorNivel = {
       }
     ],
     distractores: []
-  },
-  intermedio: {
-    nombre: "Intermedio",
+    };
+  }
+  
+  // Nivel Intermedio: 10 niveles
+  for (let i = 1; i <= 10; i++) {
+    levels[`intermedio_${i}`] = {
+      nombre: `Intermedio-${i}`,
     emoji: "🚀",
     color: "#4ECDC4",
     descripcion: "4-5 ingredientes",
@@ -179,9 +187,13 @@ const recetasPorNivel = {
       }
     ],
     distractores: []
-  },
-  dificil: {
-    nombre: "Difícil",
+    };
+  }
+  
+  // Nivel Difícil: 10 niveles
+  for (let i = 1; i <= 10; i++) {
+    levels[`dificil_${i}`] = {
+      nombre: `Difícil-${i}`,
     emoji: "🎯",
     color: "#45B7D1",
     descripcion: "6+ ingredientes con distractores",
@@ -212,12 +224,18 @@ const recetasPorNivel = {
       }
     ],
     distractores: [99, 98, 97] // Cebolla Morada, Pan Integral, Queso Azul
+    };
   }
+  
+  return levels;
 };
+
+const recetasPorNivel = generateRecipeLevels();
 
 const Game2Container = () => {
   const router = useRouter();
-  const [gameState, setGameState] = useState("SELECT_LEVEL"); // SELECT_LEVEL, PLAYING, VALIDATING, CELEBRATION, RETRY
+  const [gameState, setGameState] = useState("SELECT_GAME_TYPE"); // SELECT_GAME_TYPE, SELECT_LEVEL, PLAYING, VALIDATING, CELEBRATION, RETRY
+  const [selectedGameType, setSelectedGameType] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
   const [ingredientesEnPlato, setIngredientesEnPlato] = useState([]);
@@ -302,6 +320,11 @@ const Game2Container = () => {
     router.push("/");
   };
 
+  const handleGameTypeSelect = (gameType) => {
+    setSelectedGameType(gameType);
+    setGameState("SELECT_LEVEL");
+  };
+
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
     setGameState("PLAYING");
@@ -315,6 +338,13 @@ const Game2Container = () => {
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', e.target.outerHTML);
+    playDropSound();
+  };
+
+  const handleIngredienteFromPlateDragStart = (e, index) => {
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
     playDropSound();
   };
 
@@ -426,6 +456,40 @@ const Game2Container = () => {
     );
   };
 
+  // Función para renderizar la receta con ingredientes apilados
+  const renderRecipeStack = (receta) => {
+    const ingredientesReceta = receta.ingredientes.map(id => 
+      ingredientes.find(i => i.id === id)
+    ).filter(Boolean);
+
+    return (
+      <div className="relative flex flex-col-reverse items-center justify-center h-full">
+        {ingredientesReceta.map((ingrediente, index) => (
+          <div
+            key={index}
+            className="relative"
+            style={{
+              zIndex: index + 1,
+              marginTop: index === 0 ? '0' : '-6px'
+            }}
+          >
+            <div
+              className={`${ingrediente.forma === "pan" ? "w-24 h-6 rounded-full" : 
+                         ingrediente.forma === "redonda" ? "w-16 h-6 rounded-full" :
+                         ingrediente.forma === "cuadrada" ? "w-16 h-6 rounded-lg" :
+                         ingrediente.forma === "hojas" ? "w-20 h-4 rounded-lg" :
+                         ingrediente.forma === "alargada" ? "w-20 h-4 rounded-lg" :
+                         "w-16 h-6 rounded-lg"} shadow-lg border-2 border-white flex items-center justify-center text-xl`}
+              style={{ backgroundColor: ingrediente.color }}
+            >
+              {ingrediente.emoji}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FF0000" }}>
       {/* Header */}
@@ -463,8 +527,8 @@ const Game2Container = () => {
       </div>
 
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
-        {/* Selección de nivel */}
-        {gameState === "SELECT_LEVEL" && (
+        {/* Selección de tipo de juego */}
+        {gameState === "SELECT_GAME_TYPE" && (
           <div className="text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-8">
               <h2 className="text-4xl font-bold text-gray-800 mb-4">
@@ -475,27 +539,100 @@ const Game2Container = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {Object.entries(recetasPorNivel).map(([key, nivel]) => (
+            <div className="grid grid-cols-3 gap-6">
                 <button
-                  key={key}
-                  onClick={() => handleLevelSelect(key)}
+                onClick={() => handleGameTypeSelect('facil')}
                   className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
                 >
                   <div
                     className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
-                    style={{ backgroundColor: nivel.color }}
-                  >
-                    <div className="text-5xl mb-3">{nivel.emoji}</div>
+                  style={{ backgroundColor: '#FF6B9D' }}
+                >
+                  <div className="text-5xl mb-3">🌟</div>
+                  <div className="text-white font-bold text-xl mb-2">
+                    Fácil
+                  </div>
+                  <div className="text-white/80 text-sm text-center">
+                    2-3 ingredientes simples
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handleGameTypeSelect('intermedio')}
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+              >
+                <div
+                  className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
+                  style={{ backgroundColor: '#4ECDC4' }}
+                >
+                  <div className="text-5xl mb-3">🚀</div>
                     <div className="text-white font-bold text-xl mb-2">
-                      {nivel.nombre}
+                    Intermedio
                     </div>
                     <div className="text-white/80 text-sm text-center">
-                      {nivel.descripcion}
+                    4-5 ingredientes
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handleGameTypeSelect('dificil')}
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+              >
+                <div
+                  className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
+                  style={{ backgroundColor: '#45B7D1' }}
+                >
+                  <div className="text-5xl mb-3">🎯</div>
+                  <div className="text-white font-bold text-xl mb-2">
+                    Difícil
+                  </div>
+                  <div className="text-white/80 text-sm text-center">
+                    6+ ingredientes con distractores
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Selección de nivel específico */}
+        {gameState === "SELECT_LEVEL" && selectedGameType && (
+          <div className="text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-8">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Seleccioná un nivel
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                {selectedGameType === 'facil' && '2-3 ingredientes simples'}
+                {selectedGameType === 'intermedio' && '4-5 ingredientes'}
+                {selectedGameType === 'dificil' && '6+ ingredientes con distractores'}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-4">
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((levelNum) => {
+                const levelKey = `${selectedGameType}_${levelNum}`;
+                const nivel = recetasPorNivel[levelKey];
+                return (
+                  <button
+                    key={levelKey}
+                    onClick={() => handleLevelSelect(levelKey)}
+                    className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+                  >
+                    <div
+                      className="w-20 h-20 rounded-xl shadow-lg flex flex-col items-center justify-center p-2"
+                      style={{ backgroundColor: nivel.color }}
+                    >
+                      <div className="text-2xl mb-1">{nivel.emoji}</div>
+                      <div className="text-white font-bold text-sm">
+                        {levelNum}
                     </div>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -509,17 +646,19 @@ const Game2Container = () => {
               </h2>
 
               {/* Área de juego */}
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-3 gap-8 relative">
                 {/* Imagen de la receta a recrear */}
                 <div className="bg-gray-100 rounded-2xl p-6">
                   <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">
                     Recreá esta receta
                   </h3>
                   <div className="flex items-center justify-center h-48 bg-white rounded-xl shadow-lg">
-                    <div className="text-8xl">{recetaActual.imagen}</div>
+                    {renderRecipeStack(recetaActual)}
                   </div>
                 </div>
 
+                {/* Plato y tacho de basura */}
+                <div className="space-y-4">
                 {/* Plato donde arrastrar ingredientes */}
                 <div className="bg-gray-100 rounded-2xl p-6">
                   <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">
@@ -540,28 +679,22 @@ const Game2Container = () => {
                         <p>{isDragging ? '¡Soltá aquí!' : 'Arrastrá los ingredientes aquí'}</p>
                       </div>
                     ) : (
-                      <div className="relative w-full h-full flex items-end justify-center">
+                        <div className="relative w-full h-full flex items-center justify-center">
                         {/* Hamburguesa apilada */}
-                        <div className="relative flex flex-col-reverse items-center justify-end h-full pb-4">
+                          <div className="relative flex flex-col-reverse items-center justify-center">
                           {ingredientesEnPlato.map((ingrediente, index) => (
                             <div
                               key={index}
-                              className="relative group"
+                                className="relative group cursor-grab active:cursor-grabbing"
+                                draggable
+                                onDragStart={(e) => handleIngredienteFromPlateDragStart(e, index)}
+                                onDragEnd={handleDragEnd}
                               style={{
                                 zIndex: index + 1,
                                 marginTop: index === 0 ? '0' : '-6px'
                               }}
                             >
                               {renderIngrediente(ingrediente, index, true)}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleIngredienteRemove(index);
-                                }}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                              >
-                                ×
-                              </button>
                             </div>
                           ))}
                         </div>
@@ -578,10 +711,41 @@ const Game2Container = () => {
                       ✅ Verificar Receta
                     </button>
                   )}
+                  </div>
+
+                  {/* Tacho de basura fijo */}
+                  <div 
+                    className="bg-red-100 rounded-2xl p-4 border-2 border-red-300"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const index = parseInt(e.dataTransfer.getData('text/plain'));
+                      if (!isNaN(index)) {
+                        handleIngredienteRemove(index);
+                      }
+                    }}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">🗑️</div>
+                      <p className="text-sm font-bold text-red-700">
+                        Arrastrá aquí para eliminar
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Ingredientes disponibles */}
-                <div className="bg-gray-100 rounded-2xl p-6">
+                <div 
+                  className="bg-gray-100 rounded-2xl p-6"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const index = parseInt(e.dataTransfer.getData('text/plain'));
+                    if (!isNaN(index)) {
+                      handleIngredienteRemove(index);
+                    }
+                  }}
+                >
                   <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">
                     Ingredientes
                   </h3>
@@ -662,27 +826,60 @@ const Game2Container = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="grid grid-cols-2 gap-4 justify-center">
+                {/* Siguiente receta o siguiente nivel */}
                 {currentRecipeIndex < configNivel.recetas.length - 1 ? (
                   <button
                     onClick={handleNextRecipe}
-                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    style={{ backgroundColor: '#45B7D1' }}
+                    className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    style={{ backgroundColor: '#10B981' }}
                   >
                     ➡️ Siguiente Receta
                   </button>
-                ) : (
-                  <button
-                    onClick={handleRestart}
-                    className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    style={{ backgroundColor: '#45B7D1' }}
-                  >
-                    🔄 Jugar de Nuevo
-                  </button>
-                )}
+                ) : (() => {
+                  const currentLevelNum = parseInt(selectedLevel.split('_')[1]);
+                  const nextLevelKey = `${selectedGameType}_${currentLevelNum + 1}`;
+                  const hasNextLevel = recetasPorNivel[nextLevelKey];
+                  
+                  return hasNextLevel ? (
+                    <button
+                      onClick={() => {
+                        setSelectedLevel(nextLevelKey);
+                        setGameState("PLAYING");
+                        setCurrentRecipeIndex(0);
+                        setIngredientesEnPlato([]);
+                        setCompletedRecipes(0);
+                      }}
+                      className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      style={{ backgroundColor: '#10B981' }}
+                    >
+                      ➡️ Siguiente Nivel
+                    </button>
+                  ) : null;
+                })()}
+                
+                {/* Jugar de nuevo */}
                 <button
-                  onClick={handleBackToHome}
-                  className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  onClick={handleRestart}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#45B7D1' }}
+                >
+                  🔄 Jugar de Nuevo
+                </button>
+                
+                {/* Elegir nivel */}
+                <button
+                  onClick={() => setGameState("SELECT_LEVEL")}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  style={{ backgroundColor: '#8B5CF6' }}
+                >
+                  🎯 Elegir Nivel
+                </button>
+                
+                {/* Volver a home */}
+                <button
+                  onClick={() => setGameState("SELECT_GAME_TYPE")}
+                  className="text-white py-3 px-6 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: '#FF6B9D' }}
                 >
                   🏠 Volver al Inicio
@@ -722,11 +919,11 @@ const Game2Container = () => {
                   🔄 Intentar de Nuevo
                 </button>
                 <button
-                  onClick={() => setGameState("PLAYING")}
+                  onClick={() => setGameState("SELECT_GAME_TYPE")}
                   className="text-white py-3 px-8 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   style={{ backgroundColor: '#45B7D1' }}
                 >
-                  👀 Ver Receta
+                  🏠 Volver al Inicio
                 </button>
               </div>
             </div>
