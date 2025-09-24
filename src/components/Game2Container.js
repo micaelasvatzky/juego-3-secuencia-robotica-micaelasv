@@ -236,6 +236,7 @@ const Game2Container = () => {
   const router = useRouter();
   const [gameState, setGameState] = useState("SELECT_GAME_TYPE"); // SELECT_GAME_TYPE, SELECT_LEVEL, PLAYING, VALIDATING, CELEBRATION, RETRY
   const [selectedGameType, setSelectedGameType] = useState(null);
+  const [navigationHistory, setNavigationHistory] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
   const [ingredientesEnPlato, setIngredientesEnPlato] = useState([]);
@@ -320,14 +321,34 @@ const Game2Container = () => {
     router.push("/");
   };
 
+  const handleBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousState = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setGameState(previousState);
+      
+      if (previousState === "SELECT_GAME_TYPE") {
+        setSelectedGameType(null);
+        setSelectedLevel(null);
+      } else if (previousState === "SELECT_LEVEL") {
+        setSelectedLevel(null);
+      }
+    }
+  };
+
+  const navigateToState = (newState) => {
+    setNavigationHistory(prev => [...prev, gameState]);
+    setGameState(newState);
+  };
+
   const handleGameTypeSelect = (gameType) => {
     setSelectedGameType(gameType);
-    setGameState("SELECT_LEVEL");
+    navigateToState("SELECT_LEVEL");
   };
 
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
-    setGameState("PLAYING");
+    navigateToState("PLAYING");
     setCurrentRecipeIndex(0);
     setIngredientesEnPlato([]);
     setCompletedRecipes(0);
@@ -491,34 +512,58 @@ const Game2Container = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FF0000" }}>
+    <div className="min-h-screen" style={{ 
+      background: 'linear-gradient(135deg, #FF6B9D 0%, #FFB3BA 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background blobs */}
+      <div className="background-blob blob-1" style={{ top: '8%', right: '8%', width: '70px', height: '70px' }}></div>
+      <div className="background-blob blob-2" style={{ top: '25%', left: '5%', width: '60px', height: '60px' }}></div>
+      <div className="background-blob blob-3" style={{ top: '65%', right: '10%', width: '80px', height: '80px' }}></div>
+      <div className="background-blob blob-4" style={{ top: '75%', left: '8%', width: '55px', height: '55px', animationDelay: '2.5s' }}></div>
+      <div className="background-blob blob-5" style={{ top: '45%', left: '85%', width: '75px', height: '75px', animationDelay: '1.5s' }}></div>
+      
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <button
-          onClick={handleBackToHome}
-          className="text-4xl hover:scale-110 transition-transform duration-200"
-        >
-          🏠
-        </button>
+      <div className="flex items-center justify-between p-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleBackToHome}
+            className="card-modern p-3 text-2xl hover:scale-110 transition-all duration-300 shadow-soft"
+          >
+            🏠
+          </button>
+          
+          {navigationHistory.length > 0 && (
+            <button
+              onClick={handleBack}
+              className="card-modern p-3 text-2xl hover:scale-110 transition-all duration-300 shadow-soft"
+            >
+              ⬅️
+            </button>
+          )}
+        </div>
         
-        {/* Información del nivel */}
-        {selectedLevel && (
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white mb-1">
+        {/* Información del nivel - solo cuando no está en selección */}
+        {selectedLevel && gameState !== "SELECT_GAME_TYPE" && (
+          <div className="card-modern px-4 py-2 text-center shadow-soft">
+            <div className="text-lg font-bold text-gray-800 mb-1">
               {configNivel.emoji} {configNivel.nombre}
             </div>
-            <div className="text-sm text-white/80">
+            <div className="text-xs text-gray-600">
               Receta {currentRecipeIndex + 1} de {configNivel.recetas.length}
             </div>
           </div>
         )}
         
         <div className="flex items-center gap-4">
-          <div className="text-4xl">⭐ {score}</div>
+          <div className="card-modern px-4 py-2 text-2xl font-bold text-gray-800 shadow-soft">
+            ⭐ {score}
+          </div>
           <button
             onClick={() => setAudioEnabled(!audioEnabled)}
-            className={`text-4xl transition-transform duration-200 hover:scale-110 ${
-              audioEnabled ? "text-green-500" : "text-gray-400"
+            className={`card-modern p-3 text-2xl transition-all duration-300 hover:scale-110 shadow-soft ${
+              audioEnabled ? "text-green-600" : "text-gray-400"
             }`}
           >
             {audioEnabled ? "🔊" : "🔇"}
@@ -526,51 +571,61 @@ const Game2Container = () => {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
         {/* Selección de tipo de juego */}
         {gameState === "SELECT_GAME_TYPE" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-8">
-              <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            <div className="card-modern p-4 shadow-soft mb-4">
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 🤖 El Juego del Chef Robot
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-base text-gray-600 mb-2">
                 ¡Ayudá al chef robot a preparar las recetas perfectas!
               </p>
             </div>
             
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                 <button
                 onClick={() => handleGameTypeSelect('facil')}
-                  className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+                  className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
                 >
-                  <div
-                    className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
-                  style={{ backgroundColor: '#FF6B9D' }}
-                >
-                  <div className="text-5xl mb-3">🌟</div>
-                  <div className="text-white font-bold text-xl mb-2">
+                  <div 
+                    className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                    style={{ 
+                      background: '#8B5CF6',
+                      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                    }}
+                  >
+                    <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                      <div className="text-5xl">🌟</div>
+                    </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
                     Fácil
                   </div>
-                  <div className="text-white/80 text-sm text-center">
+                  <div className="text-sm text-white leading-tight">
                     2-3 ingredientes simples
                   </div>
-                </div>
+                  </div>
               </button>
               
               <button
                 onClick={() => handleGameTypeSelect('intermedio')}
-                className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
               >
-                <div
-                  className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
-                  style={{ backgroundColor: '#4ECDC4' }}
+                <div 
+                  className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                  style={{ 
+                    background: '#4ECDC4',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                  }}
                 >
-                  <div className="text-5xl mb-3">🚀</div>
-                    <div className="text-white font-bold text-xl mb-2">
+                  <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-5xl">🚀</div>
+                  </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
                     Intermedio
-                    </div>
-                    <div className="text-white/80 text-sm text-center">
+                  </div>
+                  <div className="text-sm text-white leading-tight">
                     4-5 ingredientes
                   </div>
                 </div>
@@ -578,17 +633,22 @@ const Game2Container = () => {
               
               <button
                 onClick={() => handleGameTypeSelect('dificil')}
-                className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
               >
-                <div
-                  className="w-40 h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center p-4"
-                  style={{ backgroundColor: '#45B7D1' }}
+                <div 
+                  className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                  style={{ 
+                    background: '#45B7D1',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                  }}
                 >
-                  <div className="text-5xl mb-3">🎯</div>
-                  <div className="text-white font-bold text-xl mb-2">
+                  <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-5xl">🎯</div>
+                  </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
                     Difícil
                   </div>
-                  <div className="text-white/80 text-sm text-center">
+                  <div className="text-sm text-white leading-tight">
                     6+ ingredientes con distractores
                   </div>
                 </div>
@@ -600,18 +660,18 @@ const Game2Container = () => {
         {/* Selección de nivel específico */}
         {gameState === "SELECT_LEVEL" && selectedGameType && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            <div className="card-modern p-6 shadow-soft mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">
                 Seleccioná un nivel
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-base text-gray-600 mb-4">
                 {selectedGameType === 'facil' && '2-3 ingredientes simples'}
                 {selectedGameType === 'intermedio' && '4-5 ingredientes'}
                 {selectedGameType === 'dificil' && '6+ ingredientes con distractores'}
               </p>
             </div>
             
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-4 max-w-2xl">
               {Array.from({ length: 10 }, (_, i) => i + 1).map((levelNum) => {
                 const levelKey = `${selectedGameType}_${levelNum}`;
                 const nivel = recetasPorNivel[levelKey];
@@ -621,16 +681,19 @@ const Game2Container = () => {
                     onClick={() => handleLevelSelect(levelKey)}
                     className="transition-all duration-300 transform hover:scale-105 focus:outline-none"
                   >
-                    <div
-                      className="w-20 h-20 rounded-xl shadow-lg flex flex-col items-center justify-center p-2"
-                      style={{ backgroundColor: nivel.color }}
+                    <div 
+                      className="w-20 h-20 rounded-2xl shadow-soft hover:shadow-glow p-4 text-center transition-all duration-300 flex flex-col justify-center"
+                      style={{ 
+                        background: nivel.color,
+                        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                      }}
                     >
-                      <div className="text-2xl mb-1">{nivel.emoji}</div>
+                      <div className="text-3xl mb-1">{nivel.emoji}</div>
                       <div className="text-white font-bold text-sm">
                         {levelNum}
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
                 );
               })}
             </div>

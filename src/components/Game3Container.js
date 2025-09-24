@@ -141,7 +141,11 @@ const Game3Container = () => {
   const nivel = searchParams.get('nivel') || 'facil';
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [gameState, setGameState] = useState("SHOWING_ROUTINE"); // SHOWING_ROUTINE, WAITING_SCAN, SCANNING, VALIDATING, CELEBRATION, RETRY
+  const [gameState, setGameState] = useState("SELECT_DIFFICULTY"); // SELECT_DIFFICULTY, SHOWING_ROUTINE, WAITING_SCAN, SCANNING, VALIDATING, CELEBRATION, RETRY
+  const [selectedDifficulty, setSelectedDifficulty] = useState(null);
+  const [navigationHistory, setNavigationHistory] = useState([]);
+  
+  console.log("Game3Container - Current gameState:", gameState);
   const [isSlideshowComplete, setIsSlideshowComplete] = useState(false);
   const [scannedSequence, setScannedSequence] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
@@ -149,7 +153,6 @@ const Game3Container = () => {
   const [attempts, setAttempts] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [testMode, setTestMode] = useState(false);
-  const [simulateMode, setSimulateMode] = useState(false);
   const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0);
   const [completedSequences, setCompletedSequences] = useState(0);
   const videoRef = useRef(null);
@@ -157,7 +160,7 @@ const Game3Container = () => {
   const audioContextRef = useRef(null);
 
   // Obtener configuración del nivel actual
-  const configNivel = configuracionesNivel[nivel];
+  const configNivel = selectedDifficulty ? configuracionesNivel[selectedDifficulty] : configuracionesNivel[nivel];
   
   // Obtener la secuencia actual
   const secuenciaActual = configNivel.secuencias[currentSequenceIndex];
@@ -365,6 +368,23 @@ const Game3Container = () => {
     router.push('/');
   };
 
+  const handleBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousState = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setGameState(previousState);
+      
+      if (previousState === "SELECT_DIFFICULTY") {
+        setSelectedDifficulty(null);
+      }
+    }
+  };
+
+  const navigateToState = (newState) => {
+    setNavigationHistory(prev => [...prev, gameState]);
+    setGameState(newState);
+  };
+
   // Funciones de audio
   const playSound = (frequency, duration, type = 'sine') => {
     if (!audioEnabled) return;
@@ -431,62 +451,174 @@ const Game3Container = () => {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0000FF' }}>
+    <div className="min-h-screen" style={{ 
+      background: 'linear-gradient(135deg, #4A90E2 0%, #A8E6CF 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background blobs */}
+      <div className="background-blob blob-1" style={{ top: '12%', right: '12%', width: '65px', height: '65px' }}></div>
+      <div className="background-blob blob-2" style={{ top: '30%', left: '8%', width: '85px', height: '85px' }}></div>
+      <div className="background-blob blob-3" style={{ top: '60%', right: '5%', width: '75px', height: '75px' }}></div>
+      <div className="background-blob blob-4" style={{ top: '85%', left: '12%', width: '60px', height: '60px', animationDelay: '3s' }}></div>
+      <div className="background-blob blob-5" style={{ top: '50%', left: '90%', width: '70px', height: '70px', animationDelay: '2s' }}></div>
+      
       {/* Header con información del nivel */}
-      <div className="flex items-center justify-between p-4">
-        <button
-          onClick={handleBackToHome}
-          className="text-4xl hover:scale-110 transition-transform duration-200"
-        >
-          🏠
-        </button>
-        
-        {/* Información del nivel */}
-        <div className="text-center">
-          <div className="text-2xl font-bold text-white mb-1">
-            {configNivel.emoji} {configNivel.nombre}
-          </div>
-          <div className="text-sm text-white/80">
-            Secuencia {currentSequenceIndex + 1} de {configNivel.secuencias.length}
-          </div>
+      <div className="flex items-center p-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleBackToHome}
+            className="card-modern p-3 text-2xl hover:scale-110 transition-all duration-300 shadow-soft"
+          >
+            🏠
+          </button>
+          
+          {navigationHistory.length > 0 && (
+            <button
+              onClick={handleBack}
+              className="card-modern p-3 text-2xl hover:scale-110 transition-all duration-300 shadow-soft"
+            >
+              ⬅️
+            </button>
+          )}
         </div>
+        
+        {/* Información del nivel - solo cuando no está en selección de dificultad */}
+        {gameState !== "SELECT_DIFFICULTY" ? (
+          <div className="flex-1 flex justify-center">
+            <div className="card-modern px-4 py-2 text-center shadow-soft">
+              <div className="text-lg font-bold text-gray-800">
+                {configNivel.emoji} {configNivel.nombre} - Secuencia {currentSequenceIndex + 1} de {configNivel.secuencias.length}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1"></div>
+        )}
         
         <div className="flex items-center gap-4">
           <button
             onClick={() => setTestMode(!testMode)}
-            className={`text-3xl transition-transform duration-200 hover:scale-110 ${
-              testMode ? 'text-yellow-500' : 'text-gray-400'
+            className={`card-modern p-3 text-2xl transition-all duration-300 hover:scale-110 shadow-soft ${
+              testMode ? 'text-yellow-600' : 'text-gray-400'
             }`}
             title="Modo de prueba"
           >
             🧪
           </button>
+          <div className="card-modern px-4 py-2 text-2xl font-bold text-gray-800 shadow-soft">
+            ⭐ {score}
+          </div>
           <button
-            onClick={() => setSimulateMode(!simulateMode)}
-            className={`text-3xl transition-transform duration-200 hover:scale-110 ${
-              simulateMode ? 'text-green-500' : 'text-gray-400'
+            onClick={() => setAudioEnabled(!audioEnabled)}
+            className={`card-modern p-3 text-2xl transition-all duration-300 hover:scale-110 shadow-soft ${
+              audioEnabled ? 'text-green-600' : 'text-gray-400'
             }`}
-            title="Modo de simulación"
           >
-            📝
+            {audioEnabled ? '🔊' : '🔇'}
           </button>
-          <div className="text-4xl">⭐ {score}</div>
         </div>
-        <button
-          onClick={() => setAudioEnabled(!audioEnabled)}
-          className={`text-4xl transition-transform duration-200 hover:scale-110 ${
-            audioEnabled ? 'text-green-500' : 'text-gray-400'
-          }`}
-        >
-          {audioEnabled ? '🔊' : '🔇'}
-        </button>
       </div>
 
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+        {/* Selección de dificultad */}
+        {gameState === "SELECT_DIFFICULTY" && (
+          <div className="text-center">
+            <div className="card-modern p-4 shadow-soft mb-4">
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                🤖 Rutinas del Robot
+              </h2>
+              <p className="text-base text-gray-600 mb-2">
+                ¡Seguí las rutinas del robot en el orden correcto!
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <button
+                onClick={() => {
+                  setSelectedDifficulty("facil");
+                  navigateToState("WAITING_SCAN");
+                }}
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
+              >
+                <div 
+                  className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                  style={{ 
+                    background: '#FF6B9D',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-5xl">🌟</div>
+                  </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
+                    Fácil
+                  </div>
+                  <div className="text-sm text-white leading-tight">
+                    2-3 pasos simples
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedDifficulty("intermedio");
+                  navigateToState("WAITING_SCAN");
+                }}
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
+              >
+                <div 
+                  className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                  style={{ 
+                    background: '#4ECDC4',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-5xl">🚀</div>
+                  </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
+                    Intermedio
+                  </div>
+                  <div className="text-sm text-white leading-tight">
+                    3-4 pasos con más acción
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedDifficulty("dificil");
+                  navigateToState("WAITING_SCAN");
+                }}
+                className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
+              >
+                <div 
+                  className="w-60 h-60 rounded-2xl shadow-soft hover:shadow-glow p-6 text-center transition-all duration-300 flex flex-col justify-center"
+                  style={{ 
+                    background: '#8B5CF6',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  <div className="flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
+                    <div className="text-5xl">🎯</div>
+                  </div>
+                  <div className="text-xl font-bold text-white mb-3 leading-tight">
+                    Difícil
+                  </div>
+                  <div className="text-sm text-white leading-tight">
+                    4-6 pasos con distractores
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Imagen y indicadores - solo se muestran durante la rutina */}
         {gameState === "SHOWING_ROUTINE" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 mb-6">
+            <div className="card-modern p-6 shadow-soft mb-6">
               <div className="relative w-80 h-80 mx-auto overflow-hidden rounded-2xl shadow-lg">
                 <Image
                   src={currentRutina.imagen}
@@ -524,7 +656,7 @@ const Game3Container = () => {
 
             {/* Mensaje de estado */}
             {!isSlideshowComplete && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+              <div className="card-modern p-6 shadow-soft">
                 <p className="text-xl text-gray-700 font-medium">
                   🤖 ¡Prestá atención a la rutina del robot!
                 </p>
@@ -539,7 +671,7 @@ const Game3Container = () => {
         {/* Botón para escanear - solo se muestra cuando termina la rutina */}
         {gameState === "WAITING_SCAN" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="card-modern p-6 shadow-soft">
               <div className="text-6xl mb-6">📋</div>
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
                 ¡Tu turno!
@@ -550,8 +682,7 @@ const Game3Container = () => {
 
               <button
                 onClick={handleStartScanning}
-                className="text-white py-4 px-12 text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                style={{ backgroundColor: '#4ECDC4' }}
+                className="btn-secondary py-4 px-12 text-xl font-bold"
               >
                 📷 ¡Comenzar a Escanear!
               </button>
@@ -562,7 +693,7 @@ const Game3Container = () => {
         {/* Interfaz de escaneo */}
         {gameState === "SCANNING" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="card-modern p-6 shadow-soft">
               <h2 className="text-3xl font-bold text-gray-800 mb-6">
                 {testMode ? "🧪 Modo de Prueba" : "📷 Escaneando..."}
               </h2>
@@ -658,7 +789,7 @@ const Game3Container = () => {
         {/* Estado de validación */}
         {gameState === "VALIDATING" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="card-modern p-6 shadow-soft">
               <div className="text-6xl mb-6 animate-spin">🤖</div>
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
                 Validando secuencia...
@@ -673,7 +804,7 @@ const Game3Container = () => {
         {/* Celebración */}
         {gameState === "CELEBRATION" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="card-modern p-6 shadow-soft">
               <div className="text-8xl mb-6 animate-bounce">🎉</div>
               <h2 className="text-4xl font-bold text-green-600 mb-4">
                 ¡Felicitaciones!
@@ -682,7 +813,7 @@ const Game3Container = () => {
                 ¡La secuencia es correcta! ¡Muy bien hecho!
               </p>
               
-              <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFF3CD' }}>
+              <div className="card-modern p-6 mb-6 shadow-soft" style={{ backgroundColor: '#FFF3CD' }}>
                 <div className="text-2xl font-bold mb-2" style={{ color: '#FF8C00' }}>
                   +100 puntos! ⭐
                 </div>
@@ -753,7 +884,7 @@ const Game3Container = () => {
         {/* Reintento */}
         {gameState === "RETRY" && (
           <div className="text-center">
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="card-modern p-6 shadow-soft">
               <div className="text-6xl mb-6">😔</div>
               <h2 className="text-3xl font-bold text-red-600 mb-4">
                 ¡La secuencia no es correcta!
@@ -762,7 +893,7 @@ const Game3Container = () => {
                 No te preocupes, podés volver a intentar escaneando las cartas en el orden correcto
               </p>
               
-              <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFF3CD' }}>
+              <div className="card-modern p-6 mb-6 shadow-soft" style={{ backgroundColor: '#FFF3CD' }}>
                 <div className="text-lg text-gray-700 mb-2">
                   Intentos: {attempts}
                 </div>
