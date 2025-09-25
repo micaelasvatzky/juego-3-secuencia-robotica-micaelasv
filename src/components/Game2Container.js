@@ -2,12 +2,21 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Ingredientes disponibles
 const ingredientes = [
   {
     id: 1,
-    nombre: "Pan",
+    nombre: "Pan de Abajo",
+    emoji: "🍞",
+    color: "#D2691E",
+    categoria: "base",
+    forma: "pan" // Forma especial para el pan
+  },
+  {
+    id: 11,
+    nombre: "Pan de Arriba",
     emoji: "🍞",
     color: "#D2691E",
     categoria: "base",
@@ -69,22 +78,6 @@ const ingredientes = [
     categoria: "proteina",
     forma: "redonda"
   },
-  {
-    id: 9,
-    nombre: "Bacon",
-    emoji: "🥓",
-    color: "#CD853F",
-    categoria: "proteina",
-    forma: "alargada"
-  },
-  {
-    id: 10,
-    nombre: "Aguacate",
-    emoji: "🥑",
-    color: "#228B22",
-    categoria: "vegetal",
-    forma: "redonda"
-  }
 ];
 
 // Distractores (ingredientes similares)
@@ -129,24 +122,24 @@ const generateRecipeLevels = () => {
         nombre: "Hamburguesa Simple",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3], // Pan, Carne, Lechuga
-        orden: [1, 2, 3]
+        ingredientes: [1, 3, 2, 11], // Pan de Arriba, Lechuga, Carne, Pan de Abajo
+        orden: [1, 3, 2, 11]
       },
       {
         id: 2,
         nombre: "Sándwich de Queso",
         emoji: "🥪",
         imagen: "🥪",
-        ingredientes: [1, 5, 4], // Pan, Queso, Tomate
-        orden: [1, 5, 4]
+        ingredientes: [1, 5, 4, 2, 11], // Pan de Arriba, Queso, Tomate, Carne, Pan de Abajo
+        orden: [1, 5, 4, 2, 11]
       },
       {
         id: 3,
         nombre: "Hamburguesa Clásica",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4], // Pan, Carne, Lechuga, Tomate
-        orden: [1, 2, 3, 4]
+        ingredientes: [1, 3, 4, 2, 11], // Pan de Arriba, Lechuga, Tomate, Carne, Pan de Abajo
+        orden: [1, 3, 4, 2, 11]
       }
     ],
     distractores: []
@@ -166,24 +159,24 @@ const generateRecipeLevels = () => {
         nombre: "Hamburguesa Completa",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4, 5], // Pan, Carne, Lechuga, Tomate, Queso
-        orden: [1, 2, 3, 4, 5]
+        ingredientes: [1, 3, 4, 5, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 2, 11]
       },
       {
         id: 5,
         nombre: "Sándwich Premium",
         emoji: "🥪",
         imagen: "🥪",
-        ingredientes: [1, 2, 3, 4, 6], // Pan, Carne, Lechuga, Tomate, Cebolla
-        orden: [1, 2, 3, 4, 6]
+        ingredientes: [1, 3, 4, 6, 2, 11], // Pan de Arriba, Lechuga, Tomate, Cebolla, Carne, Pan de Abajo
+        orden: [1, 3, 4, 6, 2, 11]
       },
       {
         id: 6,
         nombre: "Hamburguesa Gourmet",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4, 5, 6], // Pan, Carne, Lechuga, Tomate, Queso, Cebolla
-        orden: [1, 2, 3, 4, 5, 6]
+        ingredientes: [1, 3, 4, 5, 6, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Cebolla, Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 6, 2, 11]
       }
     ],
     distractores: []
@@ -203,24 +196,32 @@ const generateRecipeLevels = () => {
         nombre: "Hamburguesa Deluxe",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4, 5, 6, 7], // Pan, Carne, Lechuga, Tomate, Queso, Cebolla, Pepino
-        orden: [1, 2, 3, 4, 5, 6, 7]
+        ingredientes: [1, 3, 4, 5, 6, 7, 4, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Cebolla, Pepino, Tomate (repetido), Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 6, 7, 4, 2, 11]
       },
       {
         id: 8,
         nombre: "Hamburguesa Suprema",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4, 5, 6, 8, 9], // Pan, Carne, Lechuga, Tomate, Queso, Cebolla, Huevo, Bacon
-        orden: [1, 2, 3, 4, 5, 6, 8, 9]
+        ingredientes: [1, 3, 4, 5, 6, 8, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Cebolla, Huevo, Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 6, 8, 2, 11]
       },
       {
         id: 9,
         nombre: "Hamburguesa Gourmet Plus",
         emoji: "🍔",
         imagen: "🍔",
-        ingredientes: [1, 2, 3, 4, 5, 6, 7, 10], // Pan, Carne, Lechuga, Tomate, Queso, Cebolla, Pepino, Aguacate
-        orden: [1, 2, 3, 4, 5, 6, 7, 10]
+        ingredientes: [1, 3, 4, 5, 6, 7, 3, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Cebolla, Pepino, Lechuga (repetida), Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 6, 7, 3, 2, 11]
+      },
+      {
+        id: 10,
+        nombre: "Hamburguesa Mega",
+        emoji: "🍔",
+        imagen: "🍔",
+        ingredientes: [1, 3, 4, 5, 6, 7, 8, 4, 3, 2, 11], // Pan de Arriba, Lechuga, Tomate, Queso, Cebolla, Pepino, Huevo, Tomate (repetido), Lechuga (repetida), Carne, Pan de Abajo
+        orden: [1, 3, 4, 5, 6, 7, 8, 4, 3, 2, 11]
       }
     ],
     distractores: [99, 98, 97] // Cebolla Morada, Pan Integral, Queso Azul
@@ -444,35 +445,71 @@ const Game2Container = () => {
     setGameState("PLAYING");
   };
 
+  // Función para obtener la imagen del ingrediente
+  const getIngredienteImage = (ingrediente) => {
+    const imageMap = {
+      1: "/ingredientes/PanAbajo.png", // Pan de Abajo
+      11: "/ingredientes/PanArriba.png", // Pan de Arriba
+      2: "/ingredientes/Carne.png", // Carne
+      3: "/ingredientes/Lechuga.png", // Lechuga
+      4: "/ingredientes/Tomate.png", // Tomate
+      5: "/ingredientes/Queso.png", // Queso
+      6: "/ingredientes/Cebolla.png", // Cebolla
+      7: "/ingredientes/Pepino.png", // Pepino
+      8: "/ingredientes/Huevo.png", // Huevo
+      99: "/ingredientes/CebollaMorada.png", // Cebolla Morada
+      98: "/ingredientes/PanIntegralArriba.png", // Pan Integral (usando arriba como referencia)
+      97: "/ingredientes/QuesoAzul.png" // Queso Azul
+    };
+    return imageMap[ingrediente.id] || ingrediente.emoji;
+  };
+
   // Función para renderizar ingrediente con forma específica
   const renderIngrediente = (ingrediente, index, isInPlate = false) => {
     const baseClasses = isInPlate 
-      ? "shadow-lg border-2 border-white transition-all duration-300 hover:scale-105"
-      : "shadow-lg border-2 border-white transition-all duration-200 transform hover:scale-105";
+      ? "transition-all duration-300 hover:scale-105"
+      : "transition-all duration-200 transform hover:scale-105";
 
     const getShapeClasses = (forma) => {
       switch (forma) {
         case "pan":
-          return "w-24 h-6 rounded-full"; // Pan más ancho y bajo
+          return "w-40 h-16"; // Pan mucho más grande
         case "redonda":
-          return "w-16 h-6 rounded-full"; // Ingredientes redondos
+          return "w-24 h-16"; // Ingredientes redondos más grandes
         case "cuadrada":
-          return "w-16 h-6 rounded-lg"; // Queso cuadrado
+          return "w-24 h-16"; // Queso cuadrado más grande
         case "hojas":
-          return "w-20 h-4 rounded-lg"; // Lechuga como hojas
+          return "w-28 h-12"; // Lechuga como hojas más grande
         case "alargada":
-          return "w-20 h-4 rounded-lg"; // Bacon, pepino alargados
+          return "w-28 h-12"; // Pepino alargado más grande
         default:
-          return "w-16 h-6 rounded-lg";
+          return "w-24 h-16";
       }
     };
 
+    const imageSrc = getIngredienteImage(ingrediente);
+    const isImage = imageSrc.startsWith('/');
+
     return (
       <div
-        className={`${getShapeClasses(ingrediente.forma)} ${baseClasses} flex items-center justify-center text-xl`}
-        style={{ backgroundColor: ingrediente.color }}
+        className={`${getShapeClasses(ingrediente.forma)} ${baseClasses} flex items-center justify-center overflow-hidden`}
+        style={{ backgroundColor: isImage ? 'transparent' : ingrediente.color }}
       >
-        {ingrediente.emoji}
+        {isImage ? (
+          <Image
+            src={imageSrc}
+            alt={ingrediente.nombre}
+            width={ingrediente.forma === "pan" ? 160 : ingrediente.forma === "hojas" || ingrediente.forma === "alargada" ? 112 : 96}
+            height={ingrediente.forma === "pan" || ingrediente.forma === "redonda" || ingrediente.forma === "cuadrada" ? 64 : 48}
+            className="object-contain w-full h-full"
+            style={{
+              backgroundColor: 'transparent',
+              filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
+            }}
+          />
+        ) : (
+          <span className="text-xl">{ingrediente.emoji}</span>
+        )}
       </div>
     );
   };
@@ -484,29 +521,48 @@ const Game2Container = () => {
     ).filter(Boolean);
 
     return (
-      <div className="relative flex flex-col-reverse items-center justify-center h-full">
-        {ingredientesReceta.map((ingrediente, index) => (
-          <div
-            key={index}
-            className="relative"
-            style={{
-              zIndex: index + 1,
-              marginTop: index === 0 ? '0' : '-6px'
-            }}
-          >
+      <div className="relative flex flex-col items-center justify-center h-full">
+        {ingredientesReceta.slice().reverse().map((ingrediente, index) => {
+          const imageSrc = getIngredienteImage(ingrediente);
+          const isImage = imageSrc.startsWith('/');
+          
+          return (
             <div
-              className={`${ingrediente.forma === "pan" ? "w-24 h-6 rounded-full" : 
-                         ingrediente.forma === "redonda" ? "w-16 h-6 rounded-full" :
-                         ingrediente.forma === "cuadrada" ? "w-16 h-6 rounded-lg" :
-                         ingrediente.forma === "hojas" ? "w-20 h-4 rounded-lg" :
-                         ingrediente.forma === "alargada" ? "w-20 h-4 rounded-lg" :
-                         "w-16 h-6 rounded-lg"} shadow-lg border-2 border-white flex items-center justify-center text-xl`}
-              style={{ backgroundColor: ingrediente.color }}
+              key={index}
+              className="relative"
+              style={{
+                zIndex: ingredientesReceta.length - index,
+                marginTop: index === 0 ? '0' : '-16px'
+              }}
             >
-              {ingrediente.emoji}
+              <div
+                className={`${ingrediente.forma === "pan" ? "w-40 h-16" : 
+                           ingrediente.forma === "redonda" ? "w-24 h-16" :
+                           ingrediente.forma === "cuadrada" ? "w-24 h-16" :
+                           ingrediente.forma === "hojas" ? "w-28 h-12" :
+                           ingrediente.forma === "alargada" ? "w-28 h-12" :
+                           "w-24 h-16"} flex items-center justify-center overflow-hidden`}
+                style={{ backgroundColor: isImage ? 'transparent' : ingrediente.color }}
+              >
+                {isImage ? (
+                  <Image
+                    src={imageSrc}
+                    alt={ingrediente.nombre}
+                    width={ingrediente.forma === "pan" ? 160 : ingrediente.forma === "hojas" || ingrediente.forma === "alargada" ? 112 : 96}
+                    height={ingrediente.forma === "pan" || ingrediente.forma === "redonda" || ingrediente.forma === "cuadrada" ? 64 : 48}
+                    className="object-contain w-full h-full"
+                    style={{
+                      backgroundColor: 'transparent',
+                      filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
+                    }}
+                  />
+                ) : (
+                  <span className="text-xl">{ingrediente.emoji}</span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -715,7 +771,13 @@ const Game2Container = () => {
                   <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">
                     Recreá esta receta
                   </h3>
-                  <div className="flex items-center justify-center h-48 bg-white rounded-xl shadow-lg">
+                  <div 
+                    className="flex items-center justify-center bg-white rounded-xl shadow-lg"
+                    style={{ 
+                      height: `${Math.max(320, 200 + (recetaActual?.ingredientes.length * 40))}px`,
+                      minHeight: '320px'
+                    }}
+                  >
                     {renderRecipeStack(recetaActual)}
                   </div>
                 </div>
@@ -730,11 +792,15 @@ const Game2Container = () => {
                   <div
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`w-full h-48 border-4 border-dashed rounded-xl flex flex-col items-center justify-center transition-colors duration-300 bg-white relative overflow-hidden ${
+                    className={`w-full border-4 border-dashed rounded-xl flex items-center justify-center transition-colors duration-300 bg-white relative overflow-hidden ${
                       isDragging 
                         ? 'border-green-500 bg-green-50' 
                         : 'border-gray-400 hover:border-gray-600'
                     }`}
+                    style={{ 
+                      height: `${Math.max(320, 200 + (recetaActual?.ingredientes.length * 40))}px`,
+                      minHeight: '320px'
+                    }}
                   >
                     {ingredientesEnPlato.length === 0 ? (
                       <div className="text-center text-gray-500">
@@ -744,7 +810,7 @@ const Game2Container = () => {
                     ) : (
                         <div className="relative w-full h-full flex items-center justify-center">
                         {/* Hamburguesa apilada */}
-                          <div className="relative flex flex-col-reverse items-center justify-center">
+                          <div className="relative flex flex-col-reverse items-center justify-center" style={{ height: 'fit-content' }}>
                           {ingredientesEnPlato.map((ingrediente, index) => (
                             <div
                               key={index}
@@ -753,8 +819,8 @@ const Game2Container = () => {
                                 onDragStart={(e) => handleIngredienteFromPlateDragStart(e, index)}
                                 onDragEnd={handleDragEnd}
                               style={{
-                                zIndex: index + 1,
-                                marginTop: index === 0 ? '0' : '-6px'
+                                zIndex: ingredientesEnPlato.length - index,
+                                marginTop: index === 0 ? '0' : '-16px'
                               }}
                             >
                               {renderIngrediente(ingrediente, index, true)}

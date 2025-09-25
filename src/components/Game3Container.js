@@ -11,7 +11,7 @@ const todasLasRutinas = [
     id: 1,
     nombre: "Saltar",
     imagen: "/saltar.jpg",
-    video: "Saltar",
+    video: "/robots/robotJumping (online-video-cutter.com).mp4",
     audio: "Saltar",
     emoji: "🦘",
     color: "#FFD93D" // Amarillo vibrante
@@ -20,7 +20,7 @@ const todasLasRutinas = [
     id: 2,
     nombre: "Caminar",
     imagen: "/caminar.jpg",
-    video: "Caminar",
+    video: "/robots/robotWalking (online-video-cutter.com).mp4",
     audio: "Caminar",
     emoji: "🚶",
     color: "#6BCF7F" // Verde menta
@@ -29,7 +29,7 @@ const todasLasRutinas = [
     id: 3,
     nombre: "Correr",
     imagen: "/correr.jpg",
-    video: "Correr",
+    video: "/robots/robotRunning (online-video-cutter.com).mp4",
     audio: "Correr",
     emoji: "🏃",
     color: "#FF6B6B" // Rojo coral
@@ -38,7 +38,7 @@ const todasLasRutinas = [
     id: 4,
     nombre: "Girar",
     imagen: "/girar.jpg",
-    video: "Girar",
+    video: "/robots/robotSpinning (online-video-cutter.com).mp4",
     audio: "Girar",
     emoji: "🌀",
     color: "#A8E6CF" // Verde claro
@@ -47,7 +47,7 @@ const todasLasRutinas = [
     id: 5,
     nombre: "Bailar",
     imagen: "/saltar.jpg", // Usando imagen existente como placeholder
-    video: "Bailar",
+    video: "/robots/robotJumping (online-video-cutter.com).mp4", // Usando video de saltar como placeholder
     audio: "Bailar",
     emoji: "💃",
     color: "#FFB3BA" // Rosa claro
@@ -56,7 +56,7 @@ const todasLasRutinas = [
     id: 6,
     nombre: "Saltar",
     imagen: "/saltar.jpg", // Usando imagen existente como placeholder
-    video: "Saltar",
+    video: "/robots/robotJumping (online-video-cutter.com).mp4",
     audio: "Saltar",
     emoji: "🤸",
     color: "#BAFFC9" // Verde muy claro
@@ -537,7 +537,7 @@ const Game3Container = () => {
               <button
                 onClick={() => {
                   setSelectedDifficulty("facil");
-                  navigateToState("WAITING_SCAN");
+                  navigateToState("SHOWING_ROUTINE");
                 }}
                 className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
               >
@@ -563,7 +563,7 @@ const Game3Container = () => {
               <button
                 onClick={() => {
                   setSelectedDifficulty("intermedio");
-                  navigateToState("WAITING_SCAN");
+                  navigateToState("SHOWING_ROUTINE");
                 }}
                 className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
               >
@@ -589,7 +589,7 @@ const Game3Container = () => {
               <button
                 onClick={() => {
                   setSelectedDifficulty("dificil");
-                  navigateToState("WAITING_SCAN");
+                  navigateToState("SHOWING_ROUTINE");
                 }}
                 className="transition-all duration-300 transform hover:scale-105 focus:outline-none group"
               >
@@ -620,12 +620,13 @@ const Game3Container = () => {
           <div className="text-center">
             <div className="card-modern p-6 shadow-soft mb-6">
               <div className="relative w-80 h-80 mx-auto overflow-hidden rounded-2xl shadow-lg">
-                <Image
-                  src={currentRutina.imagen}
-                  alt={currentRutina.nombre}
-                  width={300}
-                  height={300}
-                  className="object-cover transition-opacity duration-500 ease-in-out"
+                <video
+                  src={currentRutina.video}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover transition-opacity duration-500 ease-in-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
